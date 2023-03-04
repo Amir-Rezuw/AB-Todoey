@@ -39,7 +39,6 @@ struct SharedStatistics {
             triggeringViewController.present(alert, animated: true)
         
     }
-    
     static func saveCategory (realm: Realm, data: Category, table:UITableView) {
         do {
             try realm.write({

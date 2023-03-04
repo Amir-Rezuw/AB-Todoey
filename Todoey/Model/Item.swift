@@ -13,4 +13,5 @@ class Item: Object {
     @objc dynamic var isChecked: Bool = false
     var parentCategory = LinkingObjects(fromType: Category.self, property: "items")
     @objc dynamic var dateCreated: Date?
+    @objc dynamic var quantity: String = "1"
 }

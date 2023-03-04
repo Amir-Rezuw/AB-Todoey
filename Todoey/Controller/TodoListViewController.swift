@@ -13,6 +13,7 @@ import ChameleonFramework
 class TodoListViewController: UITableViewController {
     
     
+    @IBOutlet weak var quantityLabel: UILabel!
     @IBOutlet weak var itemsNavigationBar: UINavigationItem!
     @IBOutlet weak var itemsSearcBar: UISearchBar!
     
@@ -30,7 +31,7 @@ class TodoListViewController: UITableViewController {
         tableView.addGestureRecognizer(longPress)
         tableView.rowHeight = 60
         itemsSearcBar.delegate = self
-        
+        tableView.register(UINib(nibName: "ItemsCell", bundle: nil), forCellReuseIdentifier: "TodoItemCell")
         
     }
     override func viewWillAppear(_ animated: Bool) {
@@ -57,6 +58,21 @@ class TodoListViewController: UITableViewController {
         
     }
     
+    
+    @IBAction func decreesQuantity(_ sender: UIButton) {
+        if let labelValue = quantityLabel.text {
+            quantityLabel.text = String(Int(labelValue)! - 1)
+            print(sender)
+        }
+    }
+    
+    @IBAction func increaseQuantity(_ sender: UIButton) {
+        if let labelValue = quantityLabel.text {
+            quantityLabel.text = String(Int(labelValue)! + 1)
+            
+        }
+    }
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         SharedStatistics.alertWithTextField(alertControllerTitle: "Adding new item", actionTitle: "Add", triggeringViewController: self) { field in
@@ -68,6 +84,7 @@ class TodoListViewController: UITableViewController {
                         thisItem.title = field.text!
                         currentCategory.items.append(thisItem)
                         thisItem.dateCreated = Date()
+                        thisItem.quantity = "1"
                     })
                 } catch {
                     print(error)
@@ -92,22 +109,23 @@ extension TodoListViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath) as! ItemsCell
         
         if let thisCell = itemsArray?[indexPath.row] {
-            var content = cell.defaultContentConfiguration()
-//            cell.textLabel?.text = thisCell.title
-            content.text = thisCell.title
+            cell.realm = self.realm
+            cell.thisCell = thisCell
+            cell.stepperOutlet.value = Double(thisCell.quantity)!
+            cell.itemTitle.text = thisCell.title
             cell.accessoryType = thisCell.isChecked ? .checkmark : .none
-            
             if let color = UIColor(hexString: selectedCategory!.cellColor)?.darken(byPercentage: (CGFloat(indexPath.row) / CGFloat(itemsArray!.count))) {
                 cell.backgroundColor = color
                 let contrastColor = ContrastColorOf(color, returnFlat: true)
-//                cell.textLabel?.textColor = contrastColor
-                
+                cell.quantityLabel.textColor = contrastColor
+                cell.itemTitle.textColor = contrastColor
                 cell.tintColor = contrastColor
+                cell.quantityLabel.text = thisCell.quantity
             }
-            cell.contentConfiguration = content
+            
         }
         return cell
     }
@@ -125,10 +143,9 @@ extension TodoListViewController {
             tableView.reloadData()
         }
         
-        
         tableView.deselectRow(at: indexPath, animated: true)
     }
-    //MARK: -- swipe to delete
+    //MARK: -- swipe to delete and edit
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }

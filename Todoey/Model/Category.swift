@@ -13,6 +13,5 @@ class Category: Object {
     @objc dynamic var categoryName: String = ""
     @objc dynamic var cellColor:String = ""
     let items = List<Item>()
-    let test = []
     
 }
